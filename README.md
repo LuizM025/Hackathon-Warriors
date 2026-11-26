@@ -4,8 +4,9 @@ Unidade: Bovinus Grill & Beer — Rua Augusta (São Paulo/SP)
 Equipe: Marcos Vinicius, Luiz Miguel e Victor Floriano
 Foco: Almoço por peso (11h30 às 15h30 | ~600 executivos/dia | 90 mesas / 450 lugares em 3 praças)
 
-- Vídeo da solução (até 2 min): [COLAR LINK AQUI]
-- Apresentação (até 5 slides): [Hackathon Grupo Bovinus — Solução Integrada.pptx](https://github.com/user-attachments/files/35438898/Hackathon.Grupo.Bovinus.Solucao.Integrada.pptx)
+- Vídeo da solução: https://www.youtube.com/watch?v=MIkYxprQJLg
+
+- Apresentação: [Hackathon Grupo Bovinus — Solução Integrada.pptx](https://github.com/user-attachments/files/35438898/Hackathon.Grupo.Bovinus.Solucao.Integrada.pptx)
 
 ---
 
