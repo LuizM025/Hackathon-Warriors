@@ -7,7 +7,6 @@ Foco: Almoço por peso (11h30 às 15h30 | ~600 executivos/dia | 90 mesas / 450 l
 - Vídeo da solução (até 2 min): [COLAR LINK AQUI]
 - Apresentação (até 5 slides): [Hackathon Grupo Bovinus — Solução Integrada.pptx](https://github.com/user-attachments/files/35438898/Hackathon.Grupo.Bovinus.Solucao.Integrada.pptx)
 
-
 ---
 
 ## 1. Descrição do Problema & Solução Proposta
@@ -41,6 +40,7 @@ Na operação do almoço na Rua Augusta — especialmente no pico (12h10 às 13h
 <img width="846" height="511" alt="fotosterminal (2)" src="https://github.com/user-attachments/assets/ca773f8f-f4e9-4c71-97ba-3da0f0643fb7" />
 <img width="912" height="963" alt="fotosterminal (1)" src="https://github.com/user-attachments/assets/c8f0e732-2c2c-4a71-a19e-33753b2602f4" />
 
+---
 
 ## 4. Como Executar o Protótipo
 
