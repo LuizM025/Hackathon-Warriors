@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bovinus MesaLimpa &amp; SaborRadar — Painel Operacional</title>
+  <style>
+    :root {
+      --bg: #110f0d;
+      --panel: #1b1714;
+      --panel-2: #241f1b;
+      --border: #362e27;
+      --text: #f5efe6;
+      --muted: #b5a89d;
+      --red: #c93b2b;
+      --gold: #d4a34a;
+      --green: #2e9e6b;
+      --amber: #e09f24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; }
+    header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 18px;
+    }
+    header h1 { font-size: 1.35rem; }
+    header h1 span { color: var(--gold); }
+    header p { color: var(--muted); font-size: 0.86rem; }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+      padding: 8px 13px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.84rem;
+    }
+    button:hover { border-color: var(--gold); }
+    button.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+    .alert-box {
+      padding: 14px 16px; border-radius: 10px; margin-bottom: 18px;
+      border-left: 5px solid var(--red); background: rgba(201, 59, 43, 0.14);
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .alert-box.ok { border-left-color: var(--green); background: rgba(46, 158, 107, 0.14); }
+    .tag { font-size: 0.75rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--red); color: #fff; text-transform: uppercase; }
+    .alert-box.ok .tag { background: var(--green); }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
+    .card h3 { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .val { font-size: 1.6rem; font-weight: 700; }
+    .sub { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; margin-bottom: 18px; }
+    .praca-row { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .praca-head { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; }
+    .bar { height: 10px; border-radius: 999px; background: #2c2520; overflow: hidden; display: flex; }
+    .seg-livre { background: var(--green); }
+    .seg-ocup { background: var(--gold); }
+    .seg-suja { background: var(--red); }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    .pill-crit { color: #ff8f85; font-weight: 700; }
+    .pill-ok { color: #7ce3b0; font-weight: 600; }
+
+    .mesas-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; margin-top: 12px;
+    }
+    .mesa {
+      padding: 6px 4px; border-radius: 6px; text-align: center; font-size: 0.76rem; font-weight: 700;
+      border: 1px solid var(--border); cursor: pointer;
+    }
+    .mesa.livre { background: rgba(46, 158, 107, 0.2); color: #8be8bc; }
+    .mesa.ocupada { background: rgba(212, 163, 74, 0.18); color: #f3ce83; }
+    .mesa.suja { background: rgba(201, 59, 43, 0.32); color: #ffb0a8; border-color: var(--red); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Bovinus <span>MesaLimpa &amp; SaborRadar</span></h1>
+      <p>Unidade Rua Augusta • 90 Mesas (450 Lugares) • 3 Praças • CFTV Intelbras + Bancada de Retorno</p>
+    </div>
+    <div class="btns">
+      <button id="btnNormal" onclick="carregarCenario('normal')">12h00 (Normal)</button>
+      <button id="btnPico" class="active" onclick="carregarCenario('pico')">12h50 (Pico)</button>
+      <button id="btnPos" onclick="carregarCenario('pos')">13h10 (Pós-Ação)</button>
+      <button onclick="remanejarGarcom()">Acionar Remanejamento</button>
+    </div>
+  </header>
+
+  <div id="alertBox" class="alert-box">
+    <div>
+      <span id="alertTag" class="tag">Alerta Crítico</span>
+      <strong id="alertTitle" style="margin-left: 8px;">6 mesas sujas &gt; 180s na Praça Inferior + Rejeição de 26% em Lasanha</strong>
+      <p id="alertDesc" style="margin-top: 4px; font-size: 0.88rem;">
+        Ação imediata: Remanejar 1 garçom da Praça Superior para Inferior e renovar apresentação da cuba de Lasanha no buffet.
+      </p>
+    </div>
+    <span id="clockTag" style="color: var(--gold); font-weight: 700; font-size: 0.86rem;">Cenário: 12h50</span>
+  </div>
+
+  <section class="kpis">
+    <div class="card">
+      <h3>Ocupação do Salão (90 Mesas)</h3>
+      <div id="kpiOcup" class="val">87%</div>
+      <div id="kpiOcupSub" class="sub">69 ocupadas • 9 sujas • 12 livres</div>
+    </div>
+    <div class="card">
+      <h3>Tempo Médio de Limpeza</h3>
+      <div id="kpiLimpeza" class="val" style="color: #ff8f85;">3m 25s</div>
+      <div id="kpiLimpezaSub" class="sub">Meta: ≤ 3m 00s (180s) • 6 mesas críticas</div>
+    </div>
+    <div class="card">
+      <h3>Fila na Escada (Entrada)</h3>
+      <div id="kpiEscada" class="val" style="color: var(--amber);">Atenção</div>
+      <div id="kpiEscadaSub" class="sub">Gargalo de assentos na Praça Inferior</div>
+    </div>
+    <div class="card">
+      <h3>Maior Rejeição (SaborRadar)</h3>
+      <div id="kpiRejeicao" class="val" style="color: #ff8f85;">26,0%</div>
+      <div id="kpiRejeicaoSub" class="sub">Lasanha à Bolonhesa (limite: 20%)</div>
+    </div>
+  </section>
+
+  <section class="grid-2">
+    <div class="card">
+      <h3>MesaLimpa — Status por Praça (CFTV Intelbras)</h3>
+      <div id="pracasContainer"></div>
+    </div>
+
+    <div class="card">
+      <h3>SaborRadar — Aceitação &amp; Sobras no Buffet</h3>
+      <table>
+        <thead>
+          <tr><th>Item do Cardápio</th><th>Sobra Intacta</th><th>Status / Ação</th></tr>
+        </thead>
+        <tbody id="saborTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Mapa Rápido das 90 Mesas (Clique em uma mesa suja para marcar como limpa)</h3>
+    <div id="mesasGrid" class="mesas-grid"></div>
+  </section>
+
+  <script>
+    const cenarios = {
+      normal: {
+        btn: "btnNormal", clock: "Cenário: 12h00 (Normal)", ok: true,
+        tag: "Operação Fluida",
+        title: "Todas as praças dentro da meta de 180s e rejeição do buffet abaixo de 20%",
+        desc: "Ação sugerida: Manter distribuição padrão dos 8 garçons entre as praças Principal, Inferior e Superior.",
+        ocup: "54%", ocupSub: "46 ocupadas • 3 sujas • 41 livres",
+        limpeza: "1m 40s", limpezaCor: "#7ce3b0", limpezaSub: "Meta: ≤ 3m 00s • 0 mesas críticas",
+        escada: "Livre", escadaCor: "#7ce3b0", escadaSub: "Entrada sem espera na Rua Augusta",
+        rejeicao: "11,5%", rejCor: "#7ce3b0", rejSub: "Todos os itens dentro do esperado",
+        pracas: [
+          { nome: "Praça Principal (35 mesas)", livre: 16, ocup: 18, suja: 1 },
+          { nome: "Praça Inferior (30 mesas)", livre: 13, ocup: 16, suja: 1 },
+          { nome: "Praça Superior (25 mesas)", livre: 12, ocup: 12, suja: 1 }
+        ],
+        itens: [
+          { nome: "Fraldinha na Grelha", pct: "6,2%", crit: false, acao: "Normal" },
+          { nome: "Arroz Carreteiro", pct: "9,0%", crit: false, acao: "Normal" },
+          { nome: "Lasanha à Bolonhesa", pct: "11,5%", crit: false, acao: "Normal" },
+          { nome: "Salada Caesar", pct: "8,4%", crit: false, acao: "Normal" }
+        ]
+      },
+      pico: {
+        btn: "btnPico", clock: "Cenário: 12h50 (Pico)", ok: false,
+        tag: "Alerta Crítico",
+        title: "6 mesas sujas > 180s na Praça Inferior + Rejeição de 26% em Lasanha",
+        desc: "Ação imediata: Remanejar 1 garçom da Praça Superior para Inferior e renovar apresentação da cuba de Lasanha no buffet.",
+        ocup: "87%", ocupSub: "69 ocupadas • 9 sujas • 12 livres",
+        limpeza: "3m 25s", limpezaCor: "#ff8f85", limpezaSub: "Meta: ≤ 3m 00s (180s) • 6 mesas críticas",
+        escada: "Atenção", escadaCor: "#e09f24", escadaSub: "Gargalo de assentos na Praça Inferior",
+        rejeicao: "26,0%", rejCor: "#ff8f85", rejSub: "Lasanha à Bolonhesa (limite: 20%)",
+        pracas: [
+          { nome: "Praça Principal (35 mesas)", livre: 4, ocup: 29, suja: 2 },
+          { nome: "Praça Inferior (30 mesas)", livre: 1, ocup: 23, suja: 6 },
+          { nome: "Praça Superior (25 mesas)", livre: 7, ocup: 17, suja: 1 }
+        ],
+        itens: [
+          { nome: "Lasanha à Bolonhesa", pct: "26,0%", crit: true, acao: "Alerta (>20%): renovar cuba" },
+          { nome: "Salada Caesar", pct: "14,2%", crit: false, acao: "Monitorar molho" },
+          { nome: "Arroz Carreteiro", pct: "9,5%", crit: false, acao: "Normal" },
+          { nome: "Fraldinha na Grelha", pct: "5,8%", crit: false, acao: "Normal" }
+        ]
+      },
+      pos: {
+        btn: "btnPos", clock: "Cenário: 13h10 (Pós-Ação)", ok: true,
+        tag: "Estabilizado",
+        title: "Giro normalizado após remanejamento de garçom e troca da cuba no buffet",
+        desc: "Resultado: Tempo de limpeza caiu para 2m 05s e rejeição da Lasanha recuou para 13,0%.",
+        ocup: "76%", ocupSub: "65 ocupadas • 3 sujas • 22 livres",
+        limpeza: "2m 05s", limpezaCor: "#7ce3b0", limpezaSub: "Meta atingida (≤ 3m 00s)",
+        escada: "Controlada", escadaCor: "#7ce3b0", escadaSub: "Fluxo fluido de entrada",
+        rejeicao: "13,0%", rejCor: "#7ce3b0", rejSub: "Cuba renovada com boa aceitação",
+        pracas: [
+          { nome: "Praça Principal (35 mesas)", livre: 8, ocup: 26, suja: 1 },
+          { nome: "Praça Inferior (30 mesas)", livre: 7, ocup: 22, suja: 1 },
+          { nome: "Praça Superior (25 mesas)", livre: 7, ocup: 17, suja: 1 }
+        ],
+        itens: [
+          { nome: "Lasanha à Bolonhesa", pct: "13,0%", crit: false, acao: "Estabilizado pós-troca" },
+          { nome: "Salada Caesar", pct: "10,1%", crit: false, acao: "Normal" },
+          { nome: "Arroz Carreteiro", pct: "8,8%", crit: false, acao: "Normal" },
+          { nome: "Fraldinha na Grelha", pct: "6,0%", crit: false, acao: "Normal" }
+        ]
+      }
+    };
+
+    let estadosMesas = [];
+
+    function gerarMesas(pracas) {
+      estadosMesas = [];
+      let num = 1;
+      pracas.forEach(p => {
+        for (let i = 0; i < p.ocup; i++) estadosMesas.push({ num: num++, status: "ocupada" });
+        for (let i = 0; i < p.suja; i++) estadosMesas.push({ num: num++, status: "suja" });
+        for (let i = 0; i < p.livre; i++) estadosMesas.push({ num: num++, status: "livre" });
+      });
+      renderMesas();
+    }
+
+    function renderMesas() {
+      const grid = document.getElementById("mesasGrid");
+      grid.innerHTML = estadosMesas.map((m, idx) =>
+        `<div class="mesa ${m.status}" onclick="limparMesa(${idx})">M${String(m.num).padStart(2, "0")}</div>`
+      ).join("");
+    }
+
+    function limparMesa(idx) {
+      if (estadosMesas[idx].status === "suja") {
+        estadosMesas[idx].status = "livre";
+        renderMesas();
+      }
+    }
+
+    function carregarCenario(chave) {
+      const c = cenarios[chave];
+      document.querySelectorAll(".btns button").forEach(b => b.classList.remove("active"));
+      document.getElementById(c.btn).classList.add("active");
+
+      const box = document.getElementById("alertBox");
+      box.className = c.ok ? "alert-box ok" : "alert-box";
+      document.getElementById("alertTag").textContent = c.tag;
+      document.getElementById("alertTitle").textContent = c.title;
+      document.getElementById("alertDesc").textContent = c.desc;
+      document.getElementById("clockTag").textContent = c.clock;
+
+      document.getElementById("kpiOcup").textContent = c.ocup;
+      document.getElementById("kpiOcupSub").textContent = c.ocupSub;
+      document.getElementById("kpiLimpeza").textContent = c.limpeza;
+      document.getElementById("kpiLimpeza").style.color = c.limpezaCor;
+      document.getElementById("kpiLimpezaSub").textContent = c.limpezaSub;
+      document.getElementById("kpiEscada").textContent = c.escada;
+      document.getElementById("kpiEscada").style.color = c.escadaCor;
+      document.getElementById("kpiEscadaSub").textContent = c.escadaSub;
+      document.getElementById("kpiRejeicao").textContent = c.rejeicao;
+      document.getElementById("kpiRejeicao").style.color = c.rejCor;
+      document.getElementById("kpiRejeicaoSub").textContent = c.rejSub;
+
+      document.getElementById("pracasContainer").innerHTML = c.pracas.map(p => {
+        const tot = p.livre + p.ocup + p.suja;
+        return `
+          <div class="praca-row">
+            <div class="praca-head">
+              <strong>${p.nome}</strong>
+              <span>Livres: ${p.livre} | Ocupadas: ${p.ocup} | <b style="color:#ff8f85">Sujas: ${p.suja}</b></span>
+            </div>
+            <div class="bar">
+              <div class="seg-livre" style="width:${(p.livre / tot) * 100}%"></div>
+              <div class="seg-ocup" style="width:${(p.ocup / tot) * 100}%"></div>
+              <div class="seg-suja" style="width:${(p.suja / tot) * 100}%"></div>
+            </div>
+          </div>`;
+      }).join("");
+
+      document.getElementById("saborTable").innerHTML = c.itens.map(it => `
+        <tr>
+          <td>${it.nome}</td>
+          <td class="${it.crit ? "pill-crit" : "pill-ok"}">${it.pct}</td>
+          <td>${it.acao}</td>
+        </tr>`).join("");
+
+      gerarMesas(c.pracas);
+    }
+
+    function remanejarGarcom() {
+      carregarCenario("pos");
+    }
+
+    carregarCenario("pico");
+  </script>
+</body>
+</html>
