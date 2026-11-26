@@ -45,7 +45,7 @@ Na operação do almoço na Rua Augusta — especialmente no pico (12h10 às 13h
 ## 4. Como Executar o Protótipo
 
 ### Painel Operacional (Web)
-Abra o arquivo painel-operacional/index.html diretamente em qualquer navegador moderno (Chrome, Edge, Firefox).
+Abra o arquivo index diretamente em qualquer navegador moderno (Chrome, Edge, Firefox).
 
 ### Motor de IA (Python / OpenCV)
 ```bash
